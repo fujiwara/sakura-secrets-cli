@@ -9,6 +9,7 @@ type CLI struct {
 		Create CreateCommand `cmd:"" help:"Create a new secret"`
 		Update UpdateCommand `cmd:"" help:"Update an existing secret"`
 		Delete DeleteCommand `cmd:"" help:"Delete a secret"`
+		Export ExportCommand `cmd:"" help:"Export secrets as environment variables"`
 
 		VaultID string `help:"Vault ID" required:"" env:"VAULT_ID"`
 	} `cmd:"" help:"Manage secrets in Sakura Secret Manager"`
