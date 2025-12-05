@@ -19,15 +19,15 @@ func Run(ctx context.Context) error {
 		return fmt.Errorf("failed to parse command line: %w", err)
 	}
 	switch kx.Command() {
-	case "list":
+	case "secret list":
 		return runListCommand(ctx, c)
-	case "get <name>":
+	case "secret get <name>":
 		return runGetCommand(ctx, c)
-	case "create <name> <value>", "create <name>":
+	case "secret create <name> <value>", "secret create <name>":
 		return runCreateCommand(ctx, c)
-	case "update <name> <value>", "update <name>":
+	case "secret update <name> <value>", "secret update <name>":
 		return runUpdateCommand(ctx, c)
-	case "delete <name>":
+	case "secret delete <name>":
 		return runDeleteCommand(ctx, c)
 	default:
 		return fmt.Errorf("unknown command: %s", kx.Command())

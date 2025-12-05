@@ -10,8 +10,14 @@ import (
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 )
 
+type CreateCommand struct {
+	Name  string `arg:"" help:"Name of the secret to create"`
+	Value string `arg:"" help:"Value of the secret to create" optional:""`
+	Stdin bool   `help:"Read value from stdin instead of argument"`
+}
+
 func runCreateCommand(ctx context.Context, cli *CLI) error {
-	cmd := cli.Create
+	cmd := cli.Secret.Create
 	client, err := sm.NewClient()
 	if err != nil {
 		return fmt.Errorf("failed to create SecretManager client: %w", err)
@@ -25,7 +31,7 @@ func runCreateCommand(ctx context.Context, cli *CLI) error {
 		value = string(b)
 	}
 
-	secOp := sm.NewSecretOp(client, cli.VaultID)
+	secOp := sm.NewSecretOp(client, cli.Secret.VaultID)
 	res, err := secOp.Create(ctx, v1.CreateSecret{
 		Name:  cmd.Name,
 		Value: value,
