@@ -29,19 +29,9 @@ func runExportCommand(ctx context.Context, cli *CLI) error {
 	secOp := sm.NewSecretOp(client, cli.Secret.VaultID)
 	envs := []string{}
 	for _, nameWithVersion := range cmd.Name {
-		var name string
-		var version int
-		strings.SplitN(nameWithVersion, ":", 2)
-		parts := strings.SplitN(nameWithVersion, ":", 2)
-		name = parts[0]
-		if len(parts) == 2 {
-			v, err := strconv.ParseInt(parts[1], 10, 64)
-			if err != nil {
-				return fmt.Errorf("invalid version in '%s': %w", nameWithVersion, err)
-			}
-			version = int(v)
-		} else {
-			version = 0
+		name, version, err := parseNameAndVersion(nameWithVersion)
+		if err != nil {
+			return err
 		}
 		res, err := secOp.Unveil(ctx, v1.Unveil{
 			Name:    name,
@@ -79,4 +69,22 @@ func runCommandWithEnvs(ctx context.Context, cli *CLI, envs []string, command []
 	}
 
 	return syscall.Exec(bin, command, append(os.Environ(), envs...))
+}
+
+func parseNameAndVersion(nameWithVersion string) (string, int, error) {
+	var name string
+	var version int
+	strings.SplitN(nameWithVersion, ":", 2)
+	parts := strings.SplitN(nameWithVersion, ":", 2)
+	name = parts[0]
+	if len(parts) == 2 {
+		v, err := strconv.ParseInt(parts[1], 10, 64)
+		if err != nil {
+			return "", 0, fmt.Errorf("invalid version in '%s': %w", nameWithVersion, err)
+		}
+		version = int(v)
+	} else {
+		version = 0
+	}
+	return name, version, nil
 }

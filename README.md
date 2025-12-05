@@ -84,9 +84,16 @@ $ sakura-secrets-cli secret list
 $ sakura-secrets-cli secret get foo
 {"Name":"foo","Version":2,"Value":"FOO_VALUE"}
 
-# Get a specific version
+# Get a specific version (two ways)
 $ sakura-secrets-cli secret get foo --secret-version 1
 {"Name":"foo","Version":1,"Value":"FOO_VALUE"}
+
+$ sakura-secrets-cli secret get foo:1
+{"Name":"foo","Version":1,"Value":"FOO_VALUE"}
+
+# Output only the value
+$ sakura-secrets-cli secret get foo --value-only
+FOO_VALUE
 ```
 
 #### Create a secret
