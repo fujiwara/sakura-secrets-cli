@@ -1,6 +1,22 @@
 # sakura-secrets-cli
 
-A CLI tool for managing secrets in [SAKURA Cloud Secret Manager](https://cloud.sakura.ad.jp/products/secrets-manager/)
+A CLI tool for managing secrets in [SAKURA Cloud Secret Manager](https://cloud.sakura.ad.jp/products/secrets-manager/).
+
+## Features
+
+- List, get, create, update, and delete secrets
+- Export secrets as environment variables for shell scripts
+- Run commands with secrets injected as environment variables
+- Support for versioned secrets
+- Parse JSON-formatted secrets into individual environment variables
+
+## Use Cases
+
+- **Zero-touch deployment**: `sakura-secrets-cli secret export --name DB_PASSWORD -- ./my-app` - your app doesn't need to know about secrets management
+- **CI/CD pipelines**: Inject secrets into build and deployment processes without storing them in configuration files
+- **Local development**: Run applications locally with production-like secrets management
+- **Container environments**: Pass secrets to containers at runtime without baking them into images
+- **Shell scripts**: Source exported secrets directly in shell scripts with `eval $(sakura-secrets-cli secret export --name ...)`
 
 ## Installation
 
@@ -45,7 +61,7 @@ Commands:
   secret delete --vault-id=STRING <name> [flags]
     Delete a secret
 
-  secret export --vault-id=STRING <names> ... [flags]
+  secret export --vault-id=STRING [<commands> ...] [flags]
     Export secrets as environment variables
 
 Run "sakura-secrets-cli <command> --help" for more information on a command.
@@ -111,24 +127,29 @@ $ sakura-secrets-cli secret delete my-secret --force
 
 ```bash
 # Export a single secret
-$ sakura-secrets-cli secret export foo
+$ sakura-secrets-cli secret export --name foo
 export foo=FOO_VALUE
 
 # Export multiple secrets
-$ sakura-secrets-cli secret export foo bar
+$ sakura-secrets-cli secret export --name foo --name bar
 export foo=FOO_VALUE
 export bar=BAR_VALUE
 
 # Export a specific version
-$ sakura-secrets-cli secret export foo:1
+$ sakura-secrets-cli secret export --name foo:1
 export foo=FOO_VALUE
+
 # Parse JSON value and export each key as separate variable
 $ sakura-secrets-cli secret get jsonvalue
 {"Name":"jsonvalue","Version":1,"Value":"{\"A\":\"AAA\",\"bbbb\":\"BBB\"}"}
 
-$ sakura-secrets-cli secret export jsonvalue --from-json
+$ sakura-secrets-cli secret export --name jsonvalue --from-json
 export A=AAA
 export bbbb=BBB
+
+# Run command with secrets as environment variables
+$ sakura-secrets-cli secret export --name foo -- env | grep foo
+foo=FOO_VALUE
 ```
 
 ## LICENSE
