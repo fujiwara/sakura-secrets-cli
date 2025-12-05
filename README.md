@@ -1,6 +1,6 @@
 # sakura-secrets-cli
 
-A CLI tool for managing secrets in [SAKURA Cloud Secret Manager](https://manual.sakura.ad.jp/cloud/appliance/secret-manager/).
+A CLI tool for managing secrets in [SAKURA Cloud Secret Manager](https://cloud.sakura.ad.jp/products/secrets-manager/)
 
 ## Installation
 
