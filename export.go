@@ -4,16 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/exec"
 	"strconv"
 	"strings"
+	"syscall"
 
 	sm "github.com/sacloud/secretmanager-api-go"
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 )
 
 type ExportCommand struct {
-	Names    []string `arg:"" help:"Names of the secrets to export e.g. foo:1 for version 1, foo for latest version"`
+	Name     []string `help:"Names of the secrets to export e.g. foo:1 for version 1, foo for latest version"`
 	FromJSON bool     `help:"parse value as JSON object and export each key as separate secret"`
+	Commands []string `arg:"" help:"Command to run with exported secrets in environment variables" optional:""`
 }
 
 func runExportCommand(ctx context.Context, cli *CLI) error {
@@ -23,7 +27,8 @@ func runExportCommand(ctx context.Context, cli *CLI) error {
 		return fmt.Errorf("failed to create SecretManager client: %w", err)
 	}
 	secOp := sm.NewSecretOp(client, cli.Secret.VaultID)
-	for _, nameWithVersion := range cmd.Names {
+	envs := []string{}
+	for _, nameWithVersion := range cmd.Name {
 		var name string
 		var version int
 		strings.SplitN(nameWithVersion, ":", 2)
@@ -51,12 +56,27 @@ func runExportCommand(ctx context.Context, cli *CLI) error {
 				return fmt.Errorf("failed to parse secret value as JSON object: %w", err)
 			}
 			for k, v := range m {
-				fmt.Printf("export %s=%s\n", k, v)
+				envs = append(envs, fmt.Sprintf("%s=%s", k, v))
 			}
 			continue
 		} else {
-			fmt.Printf("export %s=%s\n", name, res.Value)
+			envs = append(envs, fmt.Sprintf("%s=%s", name, res.Value))
 		}
 	}
+	if len(cmd.Commands) > 0 {
+		return runCommandWithEnvs(ctx, cli, envs, cmd.Commands)
+	}
+	for _, e := range envs {
+		fmt.Printf("export %s\n", e)
+	}
 	return nil
+}
+
+func runCommandWithEnvs(ctx context.Context, cli *CLI, envs []string, command []string) error {
+	bin, err := exec.LookPath(command[0])
+	if err != nil {
+		return fmt.Errorf("command is not executable %s: %w", command[0], err)
+	}
+
+	return syscall.Exec(bin, command, append(os.Environ(), envs...))
 }

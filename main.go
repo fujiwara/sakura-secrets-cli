@@ -29,7 +29,7 @@ func Run(ctx context.Context) error {
 		return runUpdateCommand(ctx, c)
 	case "secret delete <name>":
 		return runDeleteCommand(ctx, c)
-	case "secret export <names>":
+	case "secret export", "secret export <commands>":
 		return runExportCommand(ctx, c)
 	default:
 		return fmt.Errorf("unknown command: %s", kx.Command())
