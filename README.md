@@ -132,32 +132,50 @@ $ sakura-secrets-cli secret delete my-secret --force
 
 #### Export secrets as environment variables
 
+The `--name` flag accepts a flexible format: `name[:version][:json][:prefix]`
+
+| Format | Description |
+|--------|-------------|
+| `name` | Export the latest version |
+| `name:1` | Export version 1 |
+| `name::json` | Parse JSON and export each key (latest version) |
+| `name:1:json` | Parse JSON from version 1 |
+| `name::json:DB_` | Parse JSON with prefix `DB_` |
+| `name:1:json:DB_` | Parse JSON from version 1 with prefix `DB_` |
+
+**Note:** Environment variable names are automatically converted to uppercase.
+
 ##### Output export statements
 
 ```bash
 $ sakura-secrets-cli secret export --name foo
-export foo=FOO_VALUE
+export FOO=FOO_VALUE
 
 $ sakura-secrets-cli secret export --name foo --name bar
-export foo=FOO_VALUE
-export bar=BAR_VALUE
+export FOO=FOO_VALUE
+export BAR=BAR_VALUE
 
 # Specific version
 $ sakura-secrets-cli secret export --name foo:1
-export foo=FOO_VALUE
+export FOO=FOO_VALUE
 ```
 
-##### Parse JSON secrets with `--from-json`
+##### Parse JSON secrets
 
-If a secret value is a JSON object, `--from-json` expands each key as a separate environment variable:
+If a secret value is a JSON object, use the `:json` option to expand each key as a separate environment variable:
 
 ```bash
 $ sakura-secrets-cli secret get jsonvalue
-{"Name":"jsonvalue","Version":1,"Value":"{\"DB_HOST\":\"localhost\",\"DB_PASSWORD\":\"secret\"}"}
+{"Name":"jsonvalue","Version":1,"Value":"{\"db_host\":\"localhost\",\"db_password\":\"secret\"}"}
 
-$ sakura-secrets-cli secret export --name jsonvalue --from-json
+$ sakura-secrets-cli secret export --name jsonvalue::json
 export DB_HOST=localhost
 export DB_PASSWORD=secret
+
+# With prefix
+$ sakura-secrets-cli secret export --name jsonvalue::json:MYAPP_
+export MYAPP_DB_HOST=localhost
+export MYAPP_DB_PASSWORD=secret
 ```
 
 ##### Run commands with secrets injected
@@ -166,20 +184,20 @@ Run any command with secrets as environment variables. The command receives secr
 
 ```bash
 # Run application with secrets
-$ sakura-secrets-cli secret export --name DB_HOST --name DB_PASSWORD -- ./my-app
+$ sakura-secrets-cli secret export --name db_host --name db_password -- ./my-app
 
 # Expand JSON secrets and run command
-$ sakura-secrets-cli secret export --name db_credentials --from-json -- psql
+$ sakura-secrets-cli secret export --name db_credentials::json -- psql
 
 # Verify with env
-$ sakura-secrets-cli secret export --name foo -- env | grep foo
-foo=FOO_VALUE
+$ sakura-secrets-cli secret export --name foo -- env | grep FOO
+FOO=FOO_VALUE
 ```
 
 ##### Use with eval for current shell
 
 ```bash
-$ eval $(sakura-secrets-cli secret export --name API_KEY)
+$ eval $(sakura-secrets-cli secret export --name api_key)
 $ echo $API_KEY
 ```
 
