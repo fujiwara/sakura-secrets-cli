@@ -15,8 +15,7 @@ import (
 )
 
 type ExportCommand struct {
-	Name     []string `help:"Names of the secrets to export e.g. foo:1 for version 1, foo for latest version"`
-	FromJSON bool     `help:"parse value as JSON object and export each key as separate secret"`
+	Name     []string `help:"Names of the secrets to export. You can specify version and options like 'name:version:json:prefix'." required:""`
 	Commands []string `arg:"" help:"Command to run with exported secrets in environment variables" optional:""`
 }
 
@@ -28,8 +27,8 @@ func runExportCommand(ctx context.Context, cli *CLI) error {
 	}
 	secOp := sm.NewSecretOp(client, cli.Secret.VaultID)
 	envs := []string{}
-	for _, nameWithVersion := range cmd.Name {
-		name, version, err := parseNameAndVersion(nameWithVersion)
+	for _, np := range cmd.Name {
+		name, version, isJSON, prefix, err := parseNameParam(np)
 		if err != nil {
 			return err
 		}
@@ -40,17 +39,17 @@ func runExportCommand(ctx context.Context, cli *CLI) error {
 		if err != nil {
 			return fmt.Errorf("failed to get secret: %w", err)
 		}
-		if cmd.FromJSON {
+		if isJSON {
 			var m map[string]string
 			if err := json.Unmarshal([]byte(res.Value), &m); err != nil {
 				return fmt.Errorf("failed to parse secret value as JSON object: %w", err)
 			}
 			for k, v := range m {
-				envs = append(envs, fmt.Sprintf("%s=%s", k, v))
+				envs = append(envs, fmt.Sprintf("%s=%s", strings.ToUpper(prefix+k), v))
 			}
 			continue
 		} else {
-			envs = append(envs, fmt.Sprintf("%s=%s", name, res.Value))
+			envs = append(envs, fmt.Sprintf("%s=%s", strings.ToUpper(prefix+name), res.Value))
 		}
 	}
 	if len(cmd.Commands) > 0 {
@@ -71,20 +70,44 @@ func runCommandWithEnvs(ctx context.Context, cli *CLI, envs []string, command []
 	return syscall.Exec(bin, command, append(os.Environ(), envs...))
 }
 
-func parseNameAndVersion(nameWithVersion string) (string, int, error) {
-	var name string
-	var version int
-	strings.SplitN(nameWithVersion, ":", 2)
-	parts := strings.SplitN(nameWithVersion, ":", 2)
-	name = parts[0]
-	if len(parts) == 2 {
-		v, err := strconv.ParseInt(parts[1], 10, 64)
-		if err != nil {
-			return "", 0, fmt.Errorf("invalid version in '%s': %w", nameWithVersion, err)
-		}
-		version = int(v)
+func parseVersionString(s string) (int, error) {
+	if len(s) == 0 {
+		return 0, nil
 	} else {
-		version = 0
+		v, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return 0, fmt.Errorf("invalid version '%s': %w", s, err)
+		}
+		return int(v), nil
 	}
-	return name, version, nil
+}
+
+func parseNameParam(nameParam string) (string, int, bool, string, error) {
+	switch strings.Count(nameParam, ":") {
+	case 0:
+		return nameParam, 0, false, "", nil
+	case 1:
+		parts := strings.SplitN(nameParam, ":", 2)
+		name := parts[0]
+		version, err := parseVersionString(parts[1])
+		return name, version, false, "", err
+	case 2: // for future extension like name:version:json
+		parts := strings.SplitN(nameParam, ":", 3)
+		name := parts[0]
+		version, err := parseVersionString(parts[1])
+		if err != nil {
+			return "", 0, false, "", err
+		}
+		return name, version, parts[2] == "json", "", nil
+	case 3: // for future extension like name:version:json:prefix
+		parts := strings.SplitN(nameParam, ":", 4)
+		name := parts[0]
+		version, err := parseVersionString(parts[1])
+		if err != nil {
+			return "", 0, false, "", err
+		}
+		return name, version, parts[2] == "json", parts[3], nil
+	default:
+		return "", 0, false, "", fmt.Errorf("invalid name parameter: %s", nameParam)
+	}
 }

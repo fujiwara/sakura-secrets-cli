@@ -25,7 +25,7 @@ func runGetCommand(ctx context.Context, cli *CLI) error {
 	var version int
 	if cmd.SecretVersion == 0 {
 		var err error
-		name, version, err = parseNameAndVersion(cmd.Name)
+		name, version, _, _, err = parseNameParam(cmd.Name)
 		if err != nil {
 			return err
 		}
