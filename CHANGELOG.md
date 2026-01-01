@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.1.0](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.0.3...v0.1.0) - 2026-01-01
+- Add ExportEnvs function for library usage by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/7
+
 ## [v0.0.3](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.0.2...v0.0.3) - 2026-01-01
 - Change export --name format to support inline options by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/5
 - Bump golang.org/x/sys from 0.38.0 to 0.39.0 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/4
