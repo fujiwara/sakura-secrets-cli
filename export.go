@@ -19,44 +19,56 @@ type ExportCommand struct {
 	Commands []string `arg:"" help:"Command to run with exported secrets in environment variables" optional:""`
 }
 
-func runExportCommand(ctx context.Context, cli *CLI) error {
-	cmd := cli.Secret.Export
+func ExportEnvs(ctx context.Context, vaultID string, names []string) (map[string]string, error) {
 	client, err := sm.NewClient()
 	if err != nil {
-		return fmt.Errorf("failed to create SecretManager client: %w", err)
+		return nil, fmt.Errorf("failed to create SecretManager client: %w", err)
 	}
-	secOp := sm.NewSecretOp(client, cli.Secret.VaultID)
-	envs := []string{}
-	for _, np := range cmd.Name {
+	secOp := sm.NewSecretOp(client, vaultID)
+	envs := make(map[string]string)
+	for _, np := range names {
 		name, version, isJSON, prefix, err := parseNameParam(np)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		res, err := secOp.Unveil(ctx, v1.Unveil{
 			Name:    name,
 			Version: v1.NewOptNilInt(version),
 		})
 		if err != nil {
-			return fmt.Errorf("failed to get secret: %w", err)
+			return nil, fmt.Errorf("failed to get secret: %w", err)
 		}
 		if isJSON {
 			var m map[string]string
 			if err := json.Unmarshal([]byte(res.Value), &m); err != nil {
-				return fmt.Errorf("failed to parse secret value as JSON object: %w", err)
+				return nil, fmt.Errorf("failed to parse secret value as JSON object: %w", err)
 			}
 			for k, v := range m {
-				envs = append(envs, fmt.Sprintf("%s=%s", strings.ToUpper(prefix+k), v))
+				envs[strings.ToUpper(prefix+k)] = v
 			}
 			continue
 		} else {
-			envs = append(envs, fmt.Sprintf("%s=%s", strings.ToUpper(prefix+name), res.Value))
+			envs[strings.ToUpper(prefix+name)] = res.Value
 		}
 	}
+	return envs, nil
+}
+
+func runExportCommand(ctx context.Context, cli *CLI) error {
+	cmd := cli.Secret.Export
+	envMap, err := ExportEnvs(ctx, cli.Secret.VaultID, cmd.Name)
+	if err != nil {
+		return err
+	}
 	if len(cmd.Commands) > 0 {
+		envs := make([]string, 0, len(envMap))
+		for k, v := range envMap {
+			envs = append(envs, fmt.Sprintf("%s=%s", k, v))
+		}
 		return runCommandWithEnvs(ctx, cli, envs, cmd.Commands)
 	}
-	for _, e := range envs {
-		fmt.Printf("export %s\n", e)
+	for k, v := range envMap {
+		fmt.Printf("export %s=%s\n", k, v)
 	}
 	return nil
 }

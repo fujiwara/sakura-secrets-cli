@@ -201,6 +201,45 @@ $ eval $(sakura-secrets-cli secret export --name api_key)
 $ echo $API_KEY
 ```
 
+## Go Library Usage
+
+You can use this package as a Go library to fetch secrets programmatically.
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	sscli "github.com/fujiwara/sakura-secrets-cli"
+)
+
+func main() {
+	ctx := context.Background()
+	vaultID := "your-vault-id"
+
+	// Fetch secrets as a map of environment variables
+	// Name format: name[:version][:json][:prefix]
+	envs, err := sscli.ExportEnvs(ctx, vaultID, []string{
+		"db_password",        // latest version
+		"api_key:1",          // specific version
+		"config::json",       // parse JSON
+		"app::json:MYAPP_",   // parse JSON with prefix
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for k, v := range envs {
+		fmt.Printf("%s=%s\n", k, v)
+	}
+}
+```
+
+**Note:** Requires `SAKURACLOUD_ACCESS_TOKEN` and `SAKURACLOUD_ACCESS_TOKEN_SECRET` environment variables.
+
 ## LICENSE
 
 MIT
