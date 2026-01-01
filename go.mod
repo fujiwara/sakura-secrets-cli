@@ -3,12 +3,13 @@ module github.com/fujiwara/sakura-secrets-cli
 go 1.24.0
 
 require (
+	github.com/Songmu/prompter v0.5.1
 	github.com/alecthomas/kong v1.13.0
-	golang.org/x/sys v0.38.0
+	github.com/sacloud/secretmanager-api-go v0.2.1
+	golang.org/x/sys v0.39.0
 )
 
 require (
-	github.com/Songmu/prompter v0.5.1 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/fatih/color v1.18.0 // indirect
@@ -25,7 +26,6 @@ require (
 	github.com/sacloud/api-client-go v0.3.2 // indirect
 	github.com/sacloud/go-http v0.1.9 // indirect
 	github.com/sacloud/packages-go v0.0.11 // indirect
-	github.com/sacloud/secretmanager-api-go v0.2.1 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/ratelimit v0.3.1 // indirect
