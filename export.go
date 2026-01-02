@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -44,14 +45,22 @@ func ExportEnvs(ctx context.Context, vaultID string, names []string) (map[string
 				return nil, fmt.Errorf("failed to parse secret value as JSON object: %w", err)
 			}
 			for k, v := range m {
-				envs[strings.ToUpper(prefix+k)] = v
+				envs[makeExportEnvKey(k, prefix)] = v
 			}
 			continue
 		} else {
-			envs[strings.ToUpper(prefix+name)] = res.Value
+			envs[makeExportEnvKey(name, prefix)] = res.Value
 		}
 	}
 	return envs, nil
+}
+
+var EnvKeyInvalidRegex = regexp.MustCompile(`[^a-zA-Z0-9_]`)
+
+// makeExportEnvKey formats the environment variable key by replacing invalid characters
+// with underscores and converting it to uppercase, with an optional prefix.
+func makeExportEnvKey(name, prefix string) string {
+	return strings.ToUpper(EnvKeyInvalidRegex.ReplaceAllString(prefix+name, "_"))
 }
 
 func runExportCommand(ctx context.Context, cli *CLI) error {
