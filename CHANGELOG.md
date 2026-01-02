@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.1.1](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.1.0...v0.1.1) - 2026-01-02
+- Sanitize invalid characters in export env key by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/9
+
 ## [v0.1.0](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.0.3...v0.1.0) - 2026-01-01
 - Add ExportEnvs function for library usage by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/7
 
