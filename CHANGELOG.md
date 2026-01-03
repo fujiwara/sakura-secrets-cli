@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.1.2](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.1.1...v0.1.2) - 2026-01-03
+- set SAKURA_* envs to SAKURACLOUD_* by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/11
+
 ## [v0.1.1](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.1.0...v0.1.1) - 2026-01-02
 - Sanitize invalid characters in export env key by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/9
 
