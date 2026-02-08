@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.2.0](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.1.2...v0.2.0) - 2026-02-08
+- Update secretmanager-api-go v0.2.1 to v0.3.1 by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/15
+- Bump golang.org/x/sys from 0.39.0 to 0.40.0 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/13
+- Add local SecretManager server for development by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/17
+
 ## [v0.1.2](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.1.1...v0.1.2) - 2026-01-03
 - set SAKURA_* envs to SAKURACLOUD_* by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/11
 
