@@ -16,7 +16,7 @@ type GetCommand struct {
 
 func runGetCommand(ctx context.Context, cli *CLI) error {
 	cmd := cli.Secret.Get
-	client, err := sm.NewClient()
+	client, err := newSMClient()
 	if err != nil {
 		return fmt.Errorf("failed to create SecretManager client: %w", err)
 	}

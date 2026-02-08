@@ -24,7 +24,7 @@ func runDeleteCommand(ctx context.Context, cli *CLI) error {
 		return nil
 	}
 
-	client, err := sm.NewClient()
+	client, err := newSMClient()
 	if err != nil {
 		return fmt.Errorf("failed to create SecretManager client: %w", err)
 	}

@@ -6,6 +6,9 @@ import (
 	"os"
 
 	"github.com/alecthomas/kong"
+	"github.com/sacloud/saclient-go"
+	sm "github.com/sacloud/secretmanager-api-go"
+	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 )
 
 func Run(ctx context.Context) error {
@@ -35,6 +38,11 @@ func Run(ctx context.Context) error {
 	default:
 		return fmt.Errorf("unknown command: %s", kx.Command())
 	}
+}
+
+func newSMClient() (*v1.Client, error) {
+	var sa saclient.Client
+	return sm.NewClient(&sa)
 }
 
 func setEnvForCompatibility() {
