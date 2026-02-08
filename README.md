@@ -32,9 +32,11 @@ Or download the binary from [Releases](https://github.com/fujiwara/sakura-secret
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `SAKURACLOUD_ACCESS_TOKEN` | SAKURA Cloud API access token | Yes |
-| `SAKURACLOUD_ACCESS_TOKEN_SECRET` | SAKURA Cloud API access token secret | Yes |
+| `SAKURA_ACCESS_TOKEN` | SAKURA Cloud API access token | Yes |
+| `SAKURA_ACCESS_TOKEN_SECRET` | SAKURA Cloud API access token secret | Yes |
 | `VAULT_ID` | Secret Manager vault ID | Yes (or use `--vault-id` flag) |
+
+`SAKURACLOUD_ACCESS_TOKEN` / `SAKURACLOUD_ACCESS_TOKEN_SECRET` are also supported for backward compatibility.
 
 ## Usage
 
@@ -238,7 +240,7 @@ func main() {
 }
 ```
 
-**Note:** Requires `SAKURACLOUD_ACCESS_TOKEN` and `SAKURACLOUD_ACCESS_TOKEN_SECRET` environment variables.
+**Note:** Requires `SAKURA_ACCESS_TOKEN` and `SAKURA_ACCESS_TOKEN_SECRET` environment variables (`SAKURACLOUD_*` variants are also supported).
 
 ## LICENSE
 
