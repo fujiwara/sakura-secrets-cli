@@ -1,12 +1,14 @@
 package localserver_test
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
-	"net/http"
+	"context"
 	"net/http/httptest"
+	"sort"
 	"testing"
+
+	"github.com/sacloud/saclient-go"
+	sm "github.com/sacloud/secretmanager-api-go"
+	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 
 	"github.com/fujiwara/sakura-secrets-cli/localserver"
 )
@@ -14,294 +16,190 @@ import (
 const testPrefix = "/api/cloud/1.1"
 const testVaultID = "test-vault-123"
 
-func secretsURL(base string) string {
-	return base + testPrefix + "/secretmanager/vaults/" + testVaultID + "/secrets"
-}
-
-func unveilURL(base string) string {
-	return secretsURL(base) + "/unveil"
-}
-
-func mustMarshal(t *testing.T, v any) []byte {
+func newTestSecretOp(t *testing.T, serverURL, vaultID string) sm.SecretAPI {
 	t.Helper()
-	b, err := json.Marshal(v)
+	var sa saclient.Client
+	if err := sa.SetEnviron([]string{
+		"SAKURA_API_ROOT_URL=" + serverURL + testPrefix,
+		"SAKURA_ACCESS_TOKEN=dummy",
+		"SAKURA_ACCESS_TOKEN_SECRET=dummy",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	client, err := sm.NewClient(&sa)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return b
-}
-
-func mustReadJSON(t *testing.T, resp *http.Response, v any) {
-	t.Helper()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer resp.Body.Close()
-	if err := json.Unmarshal(body, v); err != nil {
-		t.Fatalf("failed to parse JSON: %s, body: %s", err, string(body))
-	}
+	return sm.NewSecretOp(client, vaultID)
 }
 
 func TestSecretLifecycle(t *testing.T) {
 	srv := httptest.NewServer(localserver.NewServer(testPrefix))
 	defer srv.Close()
+	ctx := context.Background()
+	secOp := newTestSecretOp(t, srv.URL, testVaultID)
 
 	// List: initially empty
-	resp, err := http.Get(secretsURL(srv.URL))
+	secrets, err := secOp.List(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("expected 200, got %d", resp.StatusCode)
-	}
-	var listResp struct {
-		Count   int `json:"Count"`
-		Secrets []struct {
-			Name          string `json:"Name"`
-			LatestVersion int    `json:"LatestVersion"`
-		} `json:"Secrets"`
-	}
-	mustReadJSON(t, resp, &listResp)
-	if listResp.Count != 0 {
-		t.Fatalf("expected 0 secrets, got %d", listResp.Count)
+	if len(secrets) != 0 {
+		t.Fatalf("expected 0 secrets, got %d", len(secrets))
 	}
 
 	// Create secret "foo"
-	createBody := mustMarshal(t, map[string]any{
-		"Secret": map[string]any{"Name": "foo", "Value": "bar"},
-	})
-	resp, err = http.Post(secretsURL(srv.URL), "application/json", bytes.NewReader(createBody))
+	created, err := secOp.Create(ctx, v1.CreateSecret{Name: "foo", Value: "bar"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != http.StatusCreated {
-		t.Fatalf("expected 201, got %d", resp.StatusCode)
-	}
-	var createResp struct {
-		Secret struct {
-			Name          string `json:"Name"`
-			LatestVersion int    `json:"LatestVersion"`
-		} `json:"Secret"`
-	}
-	mustReadJSON(t, resp, &createResp)
-	if createResp.Secret.Name != "foo" || createResp.Secret.LatestVersion != 1 {
-		t.Fatalf("unexpected create response: %+v", createResp)
+	if created.Name != "foo" || created.LatestVersion != 1 {
+		t.Fatalf("unexpected create response: %+v", created)
 	}
 
 	// List: 1 secret
-	resp, err = http.Get(secretsURL(srv.URL))
+	secrets, err = secOp.List(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	mustReadJSON(t, resp, &listResp)
-	if listResp.Count != 1 {
-		t.Fatalf("expected 1 secret, got %d", listResp.Count)
+	if len(secrets) != 1 {
+		t.Fatalf("expected 1 secret, got %d", len(secrets))
 	}
-	if listResp.Secrets[0].Name != "foo" || listResp.Secrets[0].LatestVersion != 1 {
-		t.Fatalf("unexpected list item: %+v", listResp.Secrets[0])
+	if secrets[0].Name != "foo" || secrets[0].LatestVersion != 1 {
+		t.Fatalf("unexpected list item: %+v", secrets[0])
 	}
 
 	// Unveil secret "foo" (latest)
-	unveilBody := mustMarshal(t, map[string]any{
-		"Secret": map[string]any{"Name": "foo", "Version": nil},
-	})
-	resp, err = http.Post(unveilURL(srv.URL), "application/json", bytes.NewReader(unveilBody))
+	unveiled, err := secOp.Unveil(ctx, v1.Unveil{Name: "foo"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("expected 200, got %d", resp.StatusCode)
-	}
-	var unveilResp struct {
-		Secret struct {
-			Name    string `json:"Name"`
-			Version int    `json:"Version"`
-			Value   string `json:"Value"`
-		} `json:"Secret"`
-	}
-	mustReadJSON(t, resp, &unveilResp)
-	if unveilResp.Secret.Name != "foo" || unveilResp.Secret.Version != 1 || unveilResp.Secret.Value != "bar" {
-		t.Fatalf("unexpected unveil response: %+v", unveilResp)
+	if unveiled.Name != "foo" || unveiled.Version != v1.NewOptNilInt(1) || unveiled.Value != "bar" {
+		t.Fatalf("unexpected unveil response: %+v", unveiled)
 	}
 
 	// Update secret "foo" (create v2)
-	updateBody := mustMarshal(t, map[string]any{
-		"Secret": map[string]any{"Name": "foo", "Value": "baz"},
-	})
-	resp, err = http.Post(secretsURL(srv.URL), "application/json", bytes.NewReader(updateBody))
+	updated, err := secOp.Update(ctx, v1.CreateSecret{Name: "foo", Value: "baz"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != http.StatusCreated {
-		t.Fatalf("expected 201, got %d", resp.StatusCode)
-	}
-	mustReadJSON(t, resp, &createResp)
-	if createResp.Secret.LatestVersion != 2 {
-		t.Fatalf("expected version 2, got %d", createResp.Secret.LatestVersion)
+	if updated.LatestVersion != 2 {
+		t.Fatalf("expected version 2, got %d", updated.LatestVersion)
 	}
 
 	// Unveil version 1
-	unveilV1Body := mustMarshal(t, map[string]any{
-		"Secret": map[string]any{"Name": "foo", "Version": 1},
+	unveiledV1, err := secOp.Unveil(ctx, v1.Unveil{
+		Name:    "foo",
+		Version: v1.NewOptNilInt(1),
 	})
-	resp, err = http.Post(unveilURL(srv.URL), "application/json", bytes.NewReader(unveilV1Body))
 	if err != nil {
 		t.Fatal(err)
 	}
-	mustReadJSON(t, resp, &unveilResp)
-	if unveilResp.Secret.Value != "bar" || unveilResp.Secret.Version != 1 {
-		t.Fatalf("expected v1 value 'bar', got: %+v", unveilResp.Secret)
+	if unveiledV1.Value != "bar" || unveiledV1.Version != v1.NewOptNilInt(1) {
+		t.Fatalf("expected v1 value 'bar', got: %+v", unveiledV1)
 	}
 
 	// Unveil latest (should be v2)
-	resp, err = http.Post(unveilURL(srv.URL), "application/json", bytes.NewReader(unveilBody))
+	unveiledLatest, err := secOp.Unveil(ctx, v1.Unveil{Name: "foo"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	mustReadJSON(t, resp, &unveilResp)
-	if unveilResp.Secret.Value != "baz" || unveilResp.Secret.Version != 2 {
-		t.Fatalf("expected v2 value 'baz', got: %+v", unveilResp.Secret)
+	if unveiledLatest.Value != "baz" || unveiledLatest.Version != v1.NewOptNilInt(2) {
+		t.Fatalf("expected v2 value 'baz', got: %+v", unveiledLatest)
 	}
 
 	// Delete secret "foo"
-	deleteBody := mustMarshal(t, map[string]any{
-		"Secret": map[string]any{"Name": "foo"},
-	})
-	req, err := http.NewRequest(http.MethodDelete, secretsURL(srv.URL), bytes.NewReader(deleteBody))
-	if err != nil {
+	if err := secOp.Delete(ctx, v1.DeleteSecret{Name: "foo"}); err != nil {
 		t.Fatal(err)
-	}
-	resp, err = http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if resp.StatusCode != http.StatusNoContent {
-		t.Fatalf("expected 204, got %d", resp.StatusCode)
 	}
 
 	// List: empty again
-	resp, err = http.Get(secretsURL(srv.URL))
+	secrets, err = secOp.List(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	mustReadJSON(t, resp, &listResp)
-	if listResp.Count != 0 {
-		t.Fatalf("expected 0 secrets after delete, got %d", listResp.Count)
+	if len(secrets) != 0 {
+		t.Fatalf("expected 0 secrets after delete, got %d", len(secrets))
 	}
 }
 
 func TestUnveilNotFound(t *testing.T) {
 	srv := httptest.NewServer(localserver.NewServer(testPrefix))
 	defer srv.Close()
+	ctx := context.Background()
+	secOp := newTestSecretOp(t, srv.URL, testVaultID)
 
-	body := mustMarshal(t, map[string]any{
-		"Secret": map[string]any{"Name": "nonexistent", "Version": nil},
-	})
-	resp, err := http.Post(unveilURL(srv.URL), "application/json", bytes.NewReader(body))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if resp.StatusCode != http.StatusNotFound {
-		t.Fatalf("expected 404, got %d", resp.StatusCode)
+	_, err := secOp.Unveil(ctx, v1.Unveil{Name: "nonexistent"})
+	if err == nil {
+		t.Fatal("expected error for non-existent secret")
 	}
 }
 
 func TestDeleteNotFound(t *testing.T) {
 	srv := httptest.NewServer(localserver.NewServer(testPrefix))
 	defer srv.Close()
+	ctx := context.Background()
+	secOp := newTestSecretOp(t, srv.URL, testVaultID)
 
-	body := mustMarshal(t, map[string]any{
-		"Secret": map[string]any{"Name": "nonexistent"},
-	})
-	req, err := http.NewRequest(http.MethodDelete, secretsURL(srv.URL), bytes.NewReader(body))
-	if err != nil {
-		t.Fatal(err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if resp.StatusCode != http.StatusNotFound {
-		t.Fatalf("expected 404, got %d", resp.StatusCode)
+	err := secOp.Delete(ctx, v1.DeleteSecret{Name: "nonexistent"})
+	if err == nil {
+		t.Fatal("expected error for non-existent secret")
 	}
 }
 
 func TestMultipleSecrets(t *testing.T) {
 	srv := httptest.NewServer(localserver.NewServer(testPrefix))
 	defer srv.Close()
+	ctx := context.Background()
+	secOp := newTestSecretOp(t, srv.URL, testVaultID)
 
 	for _, name := range []string{"alpha", "beta", "gamma"} {
-		body := mustMarshal(t, map[string]any{
-			"Secret": map[string]any{"Name": name, "Value": "value-" + name},
-		})
-		resp, err := http.Post(secretsURL(srv.URL), "application/json", bytes.NewReader(body))
+		_, err := secOp.Create(ctx, v1.CreateSecret{Name: name, Value: "value-" + name})
 		if err != nil {
 			t.Fatal(err)
 		}
-		if resp.StatusCode != http.StatusCreated {
-			t.Fatalf("expected 201, got %d", resp.StatusCode)
-		}
 	}
 
-	resp, err := http.Get(secretsURL(srv.URL))
+	secrets, err := secOp.List(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	var listResp struct {
-		Count   int `json:"Count"`
-		Secrets []struct {
-			Name string `json:"Name"`
-		} `json:"Secrets"`
+	if len(secrets) != 3 {
+		t.Fatalf("expected 3 secrets, got %d", len(secrets))
 	}
-	mustReadJSON(t, resp, &listResp)
-	if listResp.Count != 3 {
-		t.Fatalf("expected 3 secrets, got %d", listResp.Count)
-	}
-	// Sorted alphabetically
-	if listResp.Secrets[0].Name != "alpha" || listResp.Secrets[1].Name != "beta" || listResp.Secrets[2].Name != "gamma" {
-		t.Fatalf("unexpected order: %+v", listResp.Secrets)
+	sort.Slice(secrets, func(i, j int) bool { return secrets[i].Name < secrets[j].Name })
+	if secrets[0].Name != "alpha" || secrets[1].Name != "beta" || secrets[2].Name != "gamma" {
+		t.Fatalf("unexpected secrets: %+v", secrets)
 	}
 }
 
 func TestDifferentVaults(t *testing.T) {
 	srv := httptest.NewServer(localserver.NewServer(testPrefix))
 	defer srv.Close()
+	ctx := context.Background()
 
-	vault1URL := srv.URL + testPrefix + "/secretmanager/vaults/vault-1/secrets"
-	vault2URL := srv.URL + testPrefix + "/secretmanager/vaults/vault-2/secrets"
+	secOp1 := newTestSecretOp(t, srv.URL, "vault-1")
+	secOp2 := newTestSecretOp(t, srv.URL, "vault-2")
 
-	body := mustMarshal(t, map[string]any{
-		"Secret": map[string]any{"Name": "secret1", "Value": "value1"},
-	})
-	resp, err := http.Post(vault1URL, "application/json", bytes.NewReader(body))
-	if err != nil {
+	if _, err := secOp1.Create(ctx, v1.CreateSecret{Name: "secret1", Value: "value1"}); err != nil {
 		t.Fatal(err)
-	}
-	if resp.StatusCode != http.StatusCreated {
-		t.Fatalf("expected 201, got %d", resp.StatusCode)
 	}
 
 	// vault-2 should be empty
-	resp, err = http.Get(vault2URL)
+	secrets2, err := secOp2.List(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	var listResp struct {
-		Count int `json:"Count"`
-	}
-	mustReadJSON(t, resp, &listResp)
-	if listResp.Count != 0 {
-		t.Fatalf("vault-2 should be empty, got %d", listResp.Count)
+	if len(secrets2) != 0 {
+		t.Fatalf("vault-2 should be empty, got %d", len(secrets2))
 	}
 
 	// vault-1 should have 1
-	resp, err = http.Get(vault1URL)
+	secrets1, err := secOp1.List(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	mustReadJSON(t, resp, &listResp)
-	if listResp.Count != 1 {
-		t.Fatalf("vault-1 should have 1 secret, got %d", listResp.Count)
+	if len(secrets1) != 1 {
+		t.Fatalf("vault-1 should have 1 secret, got %d", len(secrets1))
 	}
 }
