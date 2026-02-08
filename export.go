@@ -21,7 +21,7 @@ type ExportCommand struct {
 }
 
 func ExportEnvs(ctx context.Context, vaultID string, names []string) (map[string]string, error) {
-	client, err := sm.NewClient()
+	client, err := newSMClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create SecretManager client: %w", err)
 	}

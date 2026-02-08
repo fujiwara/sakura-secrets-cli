@@ -11,7 +11,7 @@ import (
 type ListCommand struct{}
 
 func runListCommand(ctx context.Context, cli *CLI) error {
-	client, err := sm.NewClient()
+	client, err := newSMClient()
 	if err != nil {
 		return fmt.Errorf("failed to create SecretManager client: %w", err)
 	}
