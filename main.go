@@ -12,7 +12,6 @@ import (
 )
 
 func Run(ctx context.Context) error {
-	setEnvForCompatibility()
 	c := &CLI{}
 	k, err := kong.New(c, kong.Vars{"version": fmt.Sprintf("sakura-secrets-cli %s", Version)})
 	if err != nil {
@@ -43,14 +42,4 @@ func Run(ctx context.Context) error {
 func newSMClient() (*v1.Client, error) {
 	var sa saclient.Client
 	return sm.NewClient(&sa)
-}
-
-func setEnvForCompatibility() {
-	// For compatibility with older versions and SDKs
-	if v, ok := os.LookupEnv("SAKURA_ACCESS_TOKEN"); ok {
-		os.Setenv("SAKURACLOUD_ACCESS_TOKEN", v)
-	}
-	if v, ok := os.LookupEnv("SAKURA_ACCESS_TOKEN_SECRET"); ok {
-		os.Setenv("SAKURACLOUD_ACCESS_TOKEN_SECRET", v)
-	}
 }
