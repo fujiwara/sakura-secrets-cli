@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
 )
 
 // JSON request/response types matching the OpenAPI spec.
@@ -78,7 +77,11 @@ func NewServer(prefix string) *Server {
 		mux:    http.NewServeMux(),
 		prefix: prefix,
 	}
-	s.mux.HandleFunc(prefix+"/", s.handleRequest)
+	base := prefix + "/secretmanager/vaults/{vault_id}"
+	s.mux.HandleFunc("GET "+base+"/secrets", s.handleListSecrets)
+	s.mux.HandleFunc("POST "+base+"/secrets", s.handleCreateSecret)
+	s.mux.HandleFunc("DELETE "+base+"/secrets", s.handleDeleteSecret)
+	s.mux.HandleFunc("POST "+base+"/secrets/unveil", s.handleUnveil)
 	return s
 }
 
@@ -86,59 +89,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.mux.ServeHTTP(w, r)
 }
 
-func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimPrefix(r.URL.Path, s.prefix)
-
-	// POST /secretmanager/vaults/{id}/secrets/unveil
-	if strings.HasSuffix(path, "/secrets/unveil") && r.Method == http.MethodPost {
-		vaultID := extractVaultID(path, "/secrets/unveil")
-		if vaultID == "" {
-			http.Error(w, "invalid path", http.StatusBadRequest)
-			return
-		}
-		s.handleUnveil(w, r, vaultID)
-		return
-	}
-
-	// /secretmanager/vaults/{id}/secrets
-	if strings.HasSuffix(path, "/secrets") {
-		vaultID := extractVaultID(path, "/secrets")
-		if vaultID == "" {
-			http.Error(w, "invalid path", http.StatusBadRequest)
-			return
-		}
-		switch r.Method {
-		case http.MethodGet:
-			s.handleListSecrets(w, r, vaultID)
-		case http.MethodPost:
-			s.handleCreateSecret(w, r, vaultID)
-		case http.MethodDelete:
-			s.handleDeleteSecret(w, r, vaultID)
-		default:
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		}
-		return
-	}
-
-	http.NotFound(w, r)
-}
-
-// extractVaultID extracts the vault ID from a path like
-// /secretmanager/vaults/{id}/secrets by trimming the suffix and prefix.
-func extractVaultID(path, suffix string) string {
-	trimmed := strings.TrimSuffix(path, suffix)
-	const prefix = "/secretmanager/vaults/"
-	if !strings.HasPrefix(trimmed, prefix) {
-		return ""
-	}
-	id := strings.TrimPrefix(trimmed, prefix)
-	if id == "" || strings.Contains(id, "/") {
-		return ""
-	}
-	return id
-}
-
-func (s *Server) handleListSecrets(w http.ResponseWriter, _ *http.Request, vaultID string) {
+func (s *Server) handleListSecrets(w http.ResponseWriter, r *http.Request) {
+	vaultID := r.PathValue("vault_id")
 	secrets := s.store.List(vaultID)
 	items := make([]secretResponse, len(secrets))
 	for i, sec := range secrets {
@@ -153,7 +105,8 @@ func (s *Server) handleListSecrets(w http.ResponseWriter, _ *http.Request, vault
 	writeJSON(w, http.StatusOK, resp)
 }
 
-func (s *Server) handleCreateSecret(w http.ResponseWriter, r *http.Request, vaultID string) {
+func (s *Server) handleCreateSecret(w http.ResponseWriter, r *http.Request) {
+	vaultID := r.PathValue("vault_id")
 	var req wrappedCreateSecret
 	if err := readJSON(r, &req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -174,7 +127,8 @@ func (s *Server) handleCreateSecret(w http.ResponseWriter, r *http.Request, vaul
 	writeJSON(w, http.StatusCreated, resp)
 }
 
-func (s *Server) handleDeleteSecret(w http.ResponseWriter, r *http.Request, vaultID string) {
+func (s *Server) handleDeleteSecret(w http.ResponseWriter, r *http.Request) {
+	vaultID := r.PathValue("vault_id")
 	var req wrappedDeleteSecret
 	if err := readJSON(r, &req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -187,7 +141,8 @@ func (s *Server) handleDeleteSecret(w http.ResponseWriter, r *http.Request, vaul
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (s *Server) handleUnveil(w http.ResponseWriter, r *http.Request, vaultID string) {
+func (s *Server) handleUnveil(w http.ResponseWriter, r *http.Request) {
+	vaultID := r.PathValue("vault_id")
 	var req wrappedUnveilRequest
 	if err := readJSON(r, &req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
