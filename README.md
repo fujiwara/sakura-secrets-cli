@@ -242,6 +242,60 @@ func main() {
 
 **Note:** Requires `SAKURA_ACCESS_TOKEN` and `SAKURA_ACCESS_TOKEN_SECRET` environment variables (`SAKURACLOUD_*` variants are also supported).
 
+## Local Server for Development
+
+A local in-memory server that implements the SAKURA Cloud SecretManager API is included for development and testing purposes. No external dependencies or cloud credentials are required.
+
+### Start the server
+
+```bash
+go run ./cmd/sakura-secrets-localserver/
+```
+
+The server prints connection instructions on startup:
+
+```
+sakura-secrets-cli localserver is running.
+
+To connect sakura-secrets-cli to this server, set the following environment variables:
+
+  export SAKURA_API_ROOT_URL=http://localhost:8080/api/cloud/1.1
+  export SAKURA_ACCESS_TOKEN=dummy
+  export SAKURA_ACCESS_TOKEN_SECRET=dummy
+  export VAULT_ID=your-vault-id
+```
+
+### Options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--addr` | `:8080` | Listen address |
+| `--prefix` | `/api/cloud/1.1` | URL path prefix |
+
+### Usage with the CLI
+
+```bash
+# Terminal 1: Start the local server
+go run ./cmd/sakura-secrets-localserver/
+
+# Terminal 2: Set environment variables and use the CLI
+export SAKURA_API_ROOT_URL=http://localhost:8080/api/cloud/1.1
+export SAKURA_ACCESS_TOKEN=dummy
+export SAKURA_ACCESS_TOKEN_SECRET=dummy
+export VAULT_ID=test-vault
+
+sakura-secrets-cli secret create my-secret "hello"
+sakura-secrets-cli secret list
+sakura-secrets-cli secret get my-secret
+```
+
+### Notes
+
+- Data is stored in-memory and lost when the server stops.
+- Any vault ID is accepted without pre-creation.
+- Authentication tokens are accepted without validation.
+- Secret values are encrypted in memory using XOR with a random key per secret.
+
 ## LICENSE
 
 MIT
