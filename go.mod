@@ -7,7 +7,7 @@ require (
 	github.com/alecthomas/kong v1.13.0
 	github.com/sacloud/saclient-go v0.2.6
 	github.com/sacloud/secretmanager-api-go v0.3.1
-	golang.org/x/sys v0.39.0
+	golang.org/x/sys v0.40.0
 )
 
 require (
