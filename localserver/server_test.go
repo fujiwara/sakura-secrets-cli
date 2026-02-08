@@ -1,7 +1,6 @@
 package localserver_test
 
 import (
-	"context"
 	"net/http/httptest"
 	"sort"
 	"testing"
@@ -36,7 +35,7 @@ func newTestSecretOp(t *testing.T, serverURL, vaultID string) sm.SecretAPI {
 func TestSecretLifecycle(t *testing.T) {
 	srv := httptest.NewServer(localserver.NewServer(testPrefix))
 	defer srv.Close()
-	ctx := context.Background()
+	ctx := t.Context()
 	secOp := newTestSecretOp(t, srv.URL, testVaultID)
 
 	// List: initially empty
@@ -126,7 +125,7 @@ func TestSecretLifecycle(t *testing.T) {
 func TestUnveilNotFound(t *testing.T) {
 	srv := httptest.NewServer(localserver.NewServer(testPrefix))
 	defer srv.Close()
-	ctx := context.Background()
+	ctx := t.Context()
 	secOp := newTestSecretOp(t, srv.URL, testVaultID)
 
 	_, err := secOp.Unveil(ctx, v1.Unveil{Name: "nonexistent"})
@@ -138,7 +137,7 @@ func TestUnveilNotFound(t *testing.T) {
 func TestDeleteNotFound(t *testing.T) {
 	srv := httptest.NewServer(localserver.NewServer(testPrefix))
 	defer srv.Close()
-	ctx := context.Background()
+	ctx := t.Context()
 	secOp := newTestSecretOp(t, srv.URL, testVaultID)
 
 	err := secOp.Delete(ctx, v1.DeleteSecret{Name: "nonexistent"})
@@ -150,7 +149,7 @@ func TestDeleteNotFound(t *testing.T) {
 func TestMultipleSecrets(t *testing.T) {
 	srv := httptest.NewServer(localserver.NewServer(testPrefix))
 	defer srv.Close()
-	ctx := context.Background()
+	ctx := t.Context()
 	secOp := newTestSecretOp(t, srv.URL, testVaultID)
 
 	for _, name := range []string{"alpha", "beta", "gamma"} {
@@ -176,7 +175,7 @@ func TestMultipleSecrets(t *testing.T) {
 func TestDifferentVaults(t *testing.T) {
 	srv := httptest.NewServer(localserver.NewServer(testPrefix))
 	defer srv.Close()
-	ctx := context.Background()
+	ctx := t.Context()
 
 	secOp1 := newTestSecretOp(t, srv.URL, "vault-1")
 	secOp2 := newTestSecretOp(t, srv.URL, "vault-2")
