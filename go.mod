@@ -5,9 +5,10 @@ go 1.25.5
 require (
 	github.com/Songmu/prompter v0.5.1
 	github.com/alecthomas/kong v1.14.0
+	github.com/google/go-jsonnet v0.21.0
 	github.com/sacloud/saclient-go v0.2.6
 	github.com/sacloud/secretmanager-api-go v0.3.1
-	golang.org/x/sys v0.40.0
+	golang.org/x/sys v0.42.0
 )
 
 require (
@@ -20,7 +21,6 @@ require (
 	github.com/go-faster/yaml v0.4.6 // indirect
 	github.com/gofrs/flock v0.13.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
-	github.com/google/go-jsonnet v0.21.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
