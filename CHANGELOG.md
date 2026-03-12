@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.0](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.2.0...v0.3.0) - 2026-03-12
+- Add SecretNativeFunction for Jsonnet integration by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/22
+- Bump github.com/alecthomas/kong from 1.13.0 to 1.14.0 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/21
+- Bump golang.org/x/sys from 0.40.0 to 0.41.0 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/20
+- Bump goreleaser/goreleaser-action from 6 to 7 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/18
+- Bump github.com/sacloud/saclient-go from 0.2.6 to 0.3.1 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/19
+
 ## [v0.2.0](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.1.2...v0.2.0) - 2026-02-08
 - Update secretmanager-api-go v0.2.1 to v0.3.1 by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/15
 - Bump golang.org/x/sys from 0.39.0 to 0.40.0 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/13
