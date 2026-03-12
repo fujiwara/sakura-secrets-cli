@@ -242,6 +242,31 @@ func main() {
 
 **Note:** Requires `SAKURA_ACCESS_TOKEN` and `SAKURA_ACCESS_TOKEN_SECRET` environment variables (`SAKURACLOUD_*` variants are also supported).
 
+## Jsonnet Native Function
+
+`SecretNativeFunction` provides a [Jsonnet](https://jsonnet.org/) native function `secret(vault_id, name)` that reads secrets from SAKURA Cloud Secret Manager. This is useful for tools that use Jsonnet for configuration (e.g., [mqbridge](https://github.com/fujiwara/mqbridge), [simplemq-subscriber](https://github.com/fujiwara/simplemq-subscriber)).
+
+```go
+import (
+	"context"
+
+	jsonnet "github.com/google/go-jsonnet"
+	sscli "github.com/fujiwara/sakura-secrets-cli"
+)
+
+func main() {
+	ctx := context.Background()
+	vm := jsonnet.MakeVM()
+	vm.NativeFunction(sscli.SecretNativeFunction(ctx))
+
+	// Now you can use secret() in Jsonnet:
+	// { api_key: std.native("secret")("vault-id", "api-key") }
+	// { db_password: std.native("secret")("vault-id", "db-password:1") }  // specific version
+}
+```
+
+The `name` parameter supports an optional version suffix: `"name"` for the latest version, `"name:version"` for a specific version.
+
 ## Local Server for Development
 
 A local in-memory server that implements the SAKURA Cloud SecretManager API is included for development and testing purposes. No external dependencies or cloud credentials are required.
