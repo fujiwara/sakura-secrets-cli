@@ -6,9 +6,9 @@ require (
 	github.com/Songmu/prompter v0.5.1
 	github.com/alecthomas/kong v1.15.0
 	github.com/google/go-jsonnet v0.21.0
-	github.com/sacloud/saclient-go v0.3.5
+	github.com/sacloud/saclient-go v0.3.6
 	github.com/sacloud/sakumock/secretmanager v0.0.2
-	github.com/sacloud/secretmanager-api-go v0.4.0
+	github.com/sacloud/secretmanager-api-go v0.4.1
 	golang.org/x/sys v0.42.0
 )
 
