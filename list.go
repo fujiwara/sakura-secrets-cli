@@ -26,7 +26,7 @@ func runListCommand(ctx context.Context, cli *CLI) error {
 	return nil
 }
 
-func jsonString(v interface{}) string {
+func jsonString(v any) string {
 	b, err := json.Marshal(v)
 	if err != nil {
 		panic(err)
