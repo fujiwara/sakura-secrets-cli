@@ -1,17 +1,14 @@
 package sscli
 
 import (
-	"net/http/httptest"
 	"testing"
 
 	jsonnet "github.com/google/go-jsonnet"
 	sm "github.com/sacloud/secretmanager-api-go"
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 
-	"github.com/fujiwara/sakura-secrets-cli/localserver"
+	"github.com/sacloud/sakumock/secretmanager"
 )
-
-const testPrefix = "/api/cloud/1.1"
 
 func TestParseSecretName(t *testing.T) {
 	tests := []struct {
@@ -76,13 +73,13 @@ func TestSecretNativeFunction(t *testing.T) {
 	}
 }
 
-// setupLocalServer starts a local SecretManager server and sets environment
-// variables so that newSMClient() connects to it.
-func setupLocalServer(t *testing.T) *httptest.Server {
+// setupLocalServer starts a local SecretManager mock server and sets
+// environment variables so that newSMClient() connects to it.
+func setupLocalServer(t *testing.T) *secretmanager.Server {
 	t.Helper()
-	srv := httptest.NewServer(localserver.NewServer(testPrefix))
+	srv := secretmanager.NewTestServer(secretmanager.Config{})
 	t.Cleanup(srv.Close)
-	t.Setenv("SAKURA_API_ROOT_URL", srv.URL+testPrefix)
+	t.Setenv("SAKURA_ENDPOINTS_SECRETMANAGER", srv.TestURL())
 	t.Setenv("SAKURA_ACCESS_TOKEN", "dummy")
 	t.Setenv("SAKURA_ACCESS_TOKEN_SECRET", "dummy")
 	return srv
