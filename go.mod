@@ -5,10 +5,10 @@ go 1.25.5
 require (
 	github.com/Songmu/prompter v0.5.1
 	github.com/alecthomas/kong v1.15.0
-	github.com/google/go-jsonnet v0.21.0
-	github.com/sacloud/saclient-go v0.3.5
+	github.com/google/go-jsonnet v0.22.0
+	github.com/sacloud/saclient-go v0.3.7
 	github.com/sacloud/sakumock/secretmanager v0.0.2
-	github.com/sacloud/secretmanager-api-go v0.4.0
+	github.com/sacloud/secretmanager-api-go v0.4.1
 	golang.org/x/sys v0.42.0
 )
 
@@ -35,12 +35,12 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/ratelimit v0.3.1 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6 // indirect
-	golang.org/x/net v0.40.0 // indirect
-	golang.org/x/sync v0.14.0 // indirect
-	golang.org/x/term v0.32.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/sync v0.18.0 // indirect
+	golang.org/x/term v0.37.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
