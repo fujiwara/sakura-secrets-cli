@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.1](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.3.0...v0.3.1) - 2026-05-01
+- Replace in-repo localserver with sakumock by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/27
+- Pin GitHub Actions to commit SHAs by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/29
+- Build releases with Go 1.26 by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/31
+- Test against Go 1.25 and 1.26, run checkout before setup-go by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/30
+- Bump Go module dependencies by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/32
+
 ## [v0.3.0](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.2.0...v0.3.0) - 2026-03-12
 - Add SecretNativeFunction for Jsonnet integration by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/22
 - Bump github.com/alecthomas/kong from 1.13.0 to 1.14.0 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/21
