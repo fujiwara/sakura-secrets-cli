@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A CLI tool for managing secrets in SAKURA Cloud's Secret Manager service. Built with Go and uses the `sacloud/secretmanager-api-go` SDK.
+A CLI tool for managing secrets in SAKURA Cloud's Secret Manager service. Built with Go and uses the `sacloud/sacloud-sdk-go` SDK.
 
 ## Build Commands
 
@@ -30,7 +30,7 @@ make clean
 - **Package**: `sscli` (root package)
 - **Entry point**: `cmd/sakura-secrets-cli/main.go`
 - **CLI framework**: [Kong](https://github.com/alecthomas/kong)
-- **API client**: `github.com/sacloud/secretmanager-api-go`
+- **API client**: `github.com/sacloud/sacloud-sdk-go/api/secretmanager`
 
 ### File Structure
 
@@ -53,4 +53,4 @@ All commands require `--vault-id` flag or `VAULT_ID` environment variable:
 
 ### Authentication
 
-The SAKURA Cloud API credentials are handled by the `sacloud/secretmanager-api-go` SDK (typically via environment variables like `SAKURACLOUD_ACCESS_TOKEN` and `SAKURACLOUD_ACCESS_TOKEN_SECRET`).
+The SAKURA Cloud API credentials are handled by the `sacloud/sacloud-sdk-go` SDK (typically via environment variables like `SAKURACLOUD_ACCESS_TOKEN` and `SAKURACLOUD_ACCESS_TOKEN_SECRET`).

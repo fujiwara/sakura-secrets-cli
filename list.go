@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	sm "github.com/sacloud/secretmanager-api-go"
+	sm "github.com/sacloud/sacloud-sdk-go/api/secretmanager"
 )
 
 type ListCommand struct{}
