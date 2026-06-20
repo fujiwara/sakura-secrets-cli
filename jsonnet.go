@@ -8,8 +8,8 @@ import (
 
 	jsonnet "github.com/google/go-jsonnet"
 	"github.com/google/go-jsonnet/ast"
-	sm "github.com/sacloud/secretmanager-api-go"
-	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
+	sm "github.com/sacloud/sacloud-sdk-go/api/secretmanager"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/secretmanager/apis/v1"
 )
 
 // SecretNativeFunction returns a Jsonnet native function that reads secrets
