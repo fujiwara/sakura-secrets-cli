@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.3.2](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.3.1...v0.3.2) - 2026-06-20
+
+- Replace SDK dependency with sacloud/sacloud-sdk-go by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/39
+- Bump Songmu/tagpr from 1.18.3 to 1.20.0 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/38
+- Bump goreleaser/goreleaser-action from 7.2.1 to 7.2.2 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/35
+
 ## [v0.3.1](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.3.0...v0.3.1) - 2026-05-01
 - Replace in-repo localserver with sakumock by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/27
 - Pin GitHub Actions to commit SHAs by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/29
