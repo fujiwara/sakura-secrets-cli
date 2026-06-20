@@ -1,3 +1,3 @@
 package sscli
 
-var Version = "v0.3.1"
+var Version = "v0.3.2"
