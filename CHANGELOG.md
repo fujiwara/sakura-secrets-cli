@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.3.3](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.3.2...v0.3.3) - 2026-07-17
+
+- Send Version as null instead of 0 when unveiling the latest secret by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/46
+- Bump github.com/sacloud/sakumock from 0.4.0 to 0.6.0 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/45
+- Bump actions/setup-go from 6.4.0 to 6.5.0 by @dependabot[bot] in https://github.com/fujiwara/sakura-secrets-cli/pull/44
+
 ## [v0.3.2](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.3.1...v0.3.2) - 2026-06-20
 
 - Replace SDK dependency with sacloud/sacloud-sdk-go by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/39
