@@ -8,7 +8,7 @@ require (
 	github.com/google/go-jsonnet v0.22.0
 	github.com/sacloud/sacloud-sdk-go v0.0.1-beta.2
 	github.com/sacloud/sakumock v0.6.0
-	golang.org/x/sys v0.44.0
+	golang.org/x/sys v0.47.0
 )
 
 require (
