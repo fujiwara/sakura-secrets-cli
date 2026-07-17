@@ -19,9 +19,10 @@ func TestParseSecretName(t *testing.T) {
 		wantErr     bool
 	}{
 		{
-			name:     "name only",
-			input:    "my-secret",
-			wantName: "my-secret",
+			name:        "name only",
+			input:       "my-secret",
+			wantName:    "my-secret",
+			wantVersion: v1.OptNilInt{Set: true, Null: true},
 		},
 		{
 			name:        "name with version",
