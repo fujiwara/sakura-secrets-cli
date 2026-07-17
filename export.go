@@ -34,7 +34,7 @@ func ExportEnvs(ctx context.Context, vaultID string, names []string) (map[string
 		}
 		res, err := secOp.Unveil(ctx, v1.Unveil{
 			Name:    name,
-			Version: v1.NewOptNilInt(version),
+			Version: optVersion(version),
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to get secret: %w", err)
@@ -101,6 +101,18 @@ func parseVersionString(s string) (int, error) {
 		}
 		return int(v), nil
 	}
+}
+
+// optVersion converts a version number into v1.OptNilInt for Unveil requests.
+// Version 0 means "latest"; the API requires it to be sent as null, not 0.
+func optVersion(version int) v1.OptNilInt {
+	var v v1.OptNilInt
+	if version > 0 {
+		v.SetTo(version)
+	} else {
+		v.SetToNull()
+	}
+	return v
 }
 
 func parseNameParam(nameParam string) (string, int, bool, string, error) {

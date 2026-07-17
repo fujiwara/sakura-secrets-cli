@@ -4,6 +4,16 @@ import (
 	"testing"
 )
 
+func TestOptVersion(t *testing.T) {
+	// Version 0 (latest) must be sent as null: the API rejects Version: 0 with 422.
+	if v := optVersion(0); !v.IsSet() || !v.IsNull() {
+		t.Errorf("optVersion(0) = %+v, want set to null", v)
+	}
+	if v := optVersion(3); !v.IsSet() || v.IsNull() || v.Value != 3 {
+		t.Errorf("optVersion(3) = %+v, want value 3", v)
+	}
+}
+
 func TestParseNameParam(t *testing.T) {
 	tests := []struct {
 		name       string

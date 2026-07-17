@@ -37,7 +37,7 @@ func runGetCommand(ctx context.Context, cli *CLI) error {
 	secOp := sm.NewSecretOp(client, cli.Secret.VaultID)
 	res, err := secOp.Unveil(ctx, v1.Unveil{
 		Name:    name,
-		Version: v1.NewOptNilInt(version),
+		Version: optVersion(version),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get secret: %w", err)

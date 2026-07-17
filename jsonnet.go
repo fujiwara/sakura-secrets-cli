@@ -39,13 +39,13 @@ func SecretNativeFunction(ctx context.Context) *jsonnet.NativeFunction {
 func parseSecretName(s string) (string, v1.OptNilInt, error) {
 	name, versionStr, hasVersion := strings.Cut(s, ":")
 	if !hasVersion {
-		return name, v1.OptNilInt{}, nil
+		return name, optVersion(0), nil
 	}
 	version, err := strconv.Atoi(versionStr)
 	if err != nil {
 		return "", v1.OptNilInt{}, fmt.Errorf("secret: invalid version %q: %w", versionStr, err)
 	}
-	return name, v1.NewOptNilInt(version), nil
+	return name, optVersion(version), nil
 }
 
 func unveilSecret(ctx context.Context, vaultID, nameWithVersion string) (string, error) {
