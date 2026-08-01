@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	github.com/Songmu/prompter v0.5.1
-	github.com/alecthomas/kong v1.15.0
+	github.com/alecthomas/kong v1.16.0
 	github.com/google/go-jsonnet v0.22.0
 	github.com/sacloud/sacloud-sdk-go v0.0.1-beta.2
 	github.com/sacloud/sakumock v0.6.0
