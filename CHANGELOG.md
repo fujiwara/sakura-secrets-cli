@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.3.5](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.3.4...v0.3.5) - 2026-09-19
+
+- Rename CLAUDE.md to AGENTS.md by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/62
+
 ## [v0.3.4](https://github.com/fujiwara/sakura-secrets-cli/compare/v0.3.3...v0.3.4) - 2026-09-03
 
 - Update sacloud-sdk-go to v0.1.0 by @fujiwara in https://github.com/fujiwara/sakura-secrets-cli/pull/58
