@@ -1,6 +1,6 @@
 module github.com/fujiwara/sakura-secrets-cli
 
-go 1.25.5
+go 1.26.0
 
 require (
 	github.com/Songmu/prompter v0.5.1
@@ -8,7 +8,7 @@ require (
 	github.com/google/go-jsonnet v0.22.0
 	github.com/sacloud/sacloud-sdk-go v0.1.0
 	github.com/sacloud/sakumock v0.9.1
-	golang.org/x/sys v0.47.0
+	golang.org/x/sys v0.48.0
 )
 
 require (
